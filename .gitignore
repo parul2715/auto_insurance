@@ -1,0 +1,45 @@
+# --- Python ---
+__pycache__/
+*.py[cod]
+*.pyo
+*.pyd
+*.so
+*.egg
+*.egg-info/
+.eggs/
+*.log
+*.pot
+*.mo
+
+# Virtual environments
+.venv/
+venv/
+ENV/
+env/
+*.env
+
+# --- Jupyter / IPython ---
+.ipynb_checkpoints
+*.ipynb~
+
+# --- Streamlit ---
+.streamlit/secrets.toml   # DO NOT commit secrets!
+.streamlit/config.toml
+
+# --- VSCode / PyCharm ---
+.vscode/
+.idea/
+
+# --- OS files ---
+.DS_Store
+Thumbs.db
+
+# --- Build / Packaging ---
+dist/
+build/
+*.egg-info/
+
+# --- Other ---
+*.sqlite3
+*.db
+*.sql

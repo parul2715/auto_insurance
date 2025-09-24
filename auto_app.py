@@ -66,14 +66,18 @@ Users = {
 
 @st.cache_data
 def load_data():
-    engine = create_engine(st.secrets["db_url"])
-    query = "SELECT * FROM insurance"
-    df_insurance = pd.read_sql(query, engine)
-    df_insurance['Effective_To_Date'] = pd.to_datetime(df_insurance['Effective_To_Date'], errors='coerce')
-    df_insurance['Month'] = df_insurance['Effective_To_Date'].dt.month_name()
-    return df_insurance
-
-df_insurance = load_data()
+    try:
+        engine = create_engine(st.secrets["db_url"])
+        with engine.connect() as conn:
+            st.success("✅ Database connection successful")
+        query = "SELECT * FROM insurance"
+        df_insurance = pd.read_sql(query, engine)
+        df_insurance['Effective_To_Date'] = pd.to_datetime(df_insurance['Effective_To_Date'], errors='coerce')
+        df_insurance['Month'] = df_insurance['Effective_To_Date'].dt.month_name()
+        return df_insurance
+    except Exception as e:
+        st.error(f"❌ Database connection failed: {e}")
+        return pd.DataFrame()
 
 
 def login_page():
