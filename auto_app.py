@@ -65,16 +65,17 @@ Users = {
     'Parul': '3456'
 }
 
-# SQL connection and data load
-server_name = "LAPTOP-1FURGFHN\\SQLEXPRESS"
-database_name = "auto_insurance"
-driver = "ODBC+Driver+17+for+SQL+Server"
-connection_string = f"mssql+pyodbc://{server_name}/{database_name}?driver={driver}&trusted_connection=yes"
-engine = create_engine(connection_string)
-query = "SELECT * FROM insurance"
-df_insurance = pd.read_sql(query, engine)
-df_insurance['Effective_To_Date'] = pd.to_datetime(df_insurance['Effective_To_Date'], errors='coerce')
-df_insurance['Month'] = df_insurance['Effective_To_Date'].dt.month_name()
+@st.cache_data
+def load_data():
+    engine = create_engine(st.secrets["db_url"])
+    query = "SELECT * FROM insurance"
+    df_insurance = pd.read_sql(query, engine)
+    df_insurance['Effective_To_Date'] = pd.to_datetime(df_insurance['Effective_To_Date'], errors='coerce')
+    df_insurance['Month'] = df_insurance['Effective_To_Date'].dt.month_name()
+    return df_insurance
+
+df_insurance = load_data()
+
 
 def login_page():
     set_dark_theme()
