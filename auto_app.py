@@ -5,7 +5,6 @@ import seaborn as sns
 from sqlalchemy import create_engine
 import warnings
 warnings.filterwarnings('ignore')
-import pyodbc
 import pandas as pd
 import streamlit as st
 from itertools import combinations
