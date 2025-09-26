@@ -512,6 +512,8 @@ def policy_coverage(df_filtered):
         hue="Policy_Type",
         fmt="{:.0f}"
     )
+  
+##---------------claims and risk analysis-----------------------
 
 def claims_risk(df_filtered):
     st.header("⚠️ Claims and Risk Analysis")
@@ -522,7 +524,7 @@ def claims_risk(df_filtered):
 
     # ---------------- Key Claims Metrics ----------------
     total_claims = df_filtered['Number_of_Open_Complaints'].sum()
-    claim_rate = (df_filtered[df_filtered['Number_of_Open_Complaints'] > 0].shape[0] / df_filtered.shape[0]) * 100
+    claim_rate = (df_filtered['Number_of_Open_Complaints'] > 0).mean() * 100
     avg_claims = df_filtered['Number_of_Open_Complaints'].mean()
     total_claim_amount = df_filtered['Total_Claim_Amount'].sum()
     avg_claim_amount = df_filtered['Total_Claim_Amount'].mean()
@@ -577,8 +579,7 @@ def claims_risk(df_filtered):
             lambda x: (x['Number_of_Open_Complaints'] > 0).sum() / x.shape[0] * 100,
             include_groups=False
         ).reset_index(name='Claim_Rate(%)')
-    )
-    claim_rate_coverage = claim_rate_coverage.sort_values(by='Claim_Rate(%)', ascending=False)
+    ).sort_values(by='Claim_Rate(%)', ascending=False)
 
     plot_bar(
         claim_rate_coverage,
@@ -592,17 +593,16 @@ def claims_risk(df_filtered):
     )
 
     # ---------------- Risk Segment Distribution ----------------
-    df_filtered = df_filtered.copy()  # avoid SettingWithCopyWarning
+    df_filtered = df_filtered.copy()
     df_filtered['Risk_Segment'] = np.where(df_filtered['Number_of_Open_Complaints'] > 2, 'High', 'Normal')
 
     risk_segment_dist = (
         df_filtered['Risk_Segment']
         .value_counts(normalize=True)
-        .reset_index()
-        .rename(columns={'index': 'Risk_Segment', 'Risk_Segment': 'Percentage'})
+        .rename_axis('Risk_Segment')
+        .reset_index(name='Percentage')
     )
-    risk_segment_dist['Percentage'] *= 100
-    risk_segment_dist = risk_segment_dist.sort_values(by='Percentage', ascending=False)
+    risk_segment_dist['Percentage'] = pd.to_numeric(risk_segment_dist['Percentage'], errors='coerce') * 100
 
     plot_bar(
         risk_segment_dist,
@@ -615,6 +615,7 @@ def claims_risk(df_filtered):
         rotation=0,
         fmt="{:.1f}%"
     )
+    
 ##------------------------------clv analysis-----------------------------
 
 def customer_ltv(df_filtered):
@@ -676,12 +677,12 @@ def customer_ltv(df_filtered):
 
     # ---------------- CLV Segment Distribution ----------------
     clv_segment_dist = (
-        df_filtered['CLV_Segment'].value_counts(normalize=True)
-        .reset_index()
-        .rename(columns={'index': 'CLV_Segment', 'CLV_Segment': 'Percentage'})
+        df_filtered['CLV_Segment']
+        .value_counts(normalize=True)
+        .rename_axis('CLV_Segment')
+        .reset_index(name='Percentage')
     )
-    clv_segment_dist['Percentage'] *= 100
-    clv_segment_dist = clv_segment_dist.sort_values(by='Percentage', ascending=False)
+    clv_segment_dist['Percentage'] = pd.to_numeric(clv_segment_dist['Percentage'], errors='coerce') * 100
 
     plot_bar(
         clv_segment_dist,
@@ -733,8 +734,7 @@ def customer_ltv(df_filtered):
     lower_bound = df_filtered['CLV_Corrected'].quantile(0.25)
     upper_bound = df_filtered['CLV_Corrected'].quantile(0.75)
     growth_potential_customers = df_filtered[
-        (df_filtered['CLV_Corrected'] > lower_bound) &
-        (df_filtered['CLV_Corrected'] < upper_bound)
+        (df_filtered['CLV_Corrected'] > lower_bound) & (df_filtered['CLV_Corrected'] < upper_bound)
     ]
     st.markdown(f"**Number of Growth Potential Customers (25%-75% segment):** {len(growth_potential_customers)}")
 
