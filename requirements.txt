@@ -1,8 +1,12 @@
 streamlit
 pandas
-sqlalchemy
-psycopg2-binary
-pyodbc
+numpy
 matplotlib
 seaborn
 plotly
+sqlalchemy
+psycopg2-binary
+pyodbc
+joblib
+scikit-learn
+shap
