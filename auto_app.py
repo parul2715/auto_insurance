@@ -883,209 +883,195 @@ def customer_ltv(df_filtered):
 ##-------------MARKETING AND CAMPAIGN PERFORMANCE ANALYSIS
 
 
-df_insurance['Response'] = df_insurance['Response'].astype(str)
 
+def marketing_campaigns(df_filtered):
+    st.header("📢 Marketing and Campaign Performance Analysis")
 
-# Response Rate by Channel
-response_by_channel = df_insurance.groupby('Sales_Channel').apply(
-    lambda x: (x['Response'] == 'True').mean() * 100,
-    include_groups=False
-).reset_index(name='Response_Rate(%)').sort_values(by='Response_Rate(%)', ascending=False)
+    # Ensure Response is string
+    df_filtered['Response'] = df_filtered['Response'].astype(str)
 
-response_by_channel['Sales_Channel'] = response_by_channel['Sales_Channel'].astype(str)
+    # ---------------- Response Rate by Channel ----------------
+    response_by_channel = df_filtered.groupby('Sales_Channel').apply(
+        lambda x: (x['Response'] == 'True').mean() * 100,
+        include_groups=False
+    ).reset_index(name='Response_Rate(%)').sort_values(by='Response_Rate(%)', ascending=False)
 
-plt.figure(figsize=(10,6))
-sns.set_style("white")
-ax = sns.barplot(
-    data=response_by_channel,
-    x='Sales_Channel',
-    y='Response_Rate(%)',
-    hue='Sales_Channel',
-    palette='pastel',
-    dodge=False,
-    legend=False
-)
-plt.title('Response Rate by Sales Channel')
-plt.xlabel('Sales Channel')
-plt.ylabel('Response Rate (%)')
+    response_by_channel['Sales_Channel'] = response_by_channel['Sales_Channel'].astype(str)
 
-for p in ax.patches:
-    height = p.get_height()
-    ax.annotate(f'{height:.1f}%', (p.get_x() + p.get_width()/2, height),
-                ha='center', va='bottom', fontsize=12, color='black',
-                xytext=(0, 3), textcoords='offset points')
-
-plt.xticks(rotation=30)
-sns.despine()
-plt.tight_layout()
-plt.show()
-
-
-# Response Rate by Policy Type
-response_by_policy = df_insurance.groupby('Policy_Type').apply(
-    lambda x: (x['Response'] == 'True').mean() * 100,
-    include_groups=False
-).reset_index(name='Response_Rate(%)').sort_values(by='Response_Rate(%)', ascending=False)
-
-plt.figure(figsize=(6,5))
-sns.set_style("white")
-ax = sns.barplot(data=response_by_policy, x='Policy_Type', y='Response_Rate(%)', color='lightgreen')
-plt.title('Response Rate by Policy Type')
-plt.xlabel('Policy Type')
-plt.ylabel('Response Rate (%)')
-for p in ax.patches:
-    height = p.get_height()
-    if height > 0:
+    plt.figure(figsize=(10, 6))
+    sns.set_style("white")
+    ax = sns.barplot(
+        data=response_by_channel,
+        x='Sales_Channel',
+        y='Response_Rate(%)',
+        hue='Sales_Channel',
+        palette='pastel',
+        dodge=False,
+        legend=False
+    )
+    plt.title('Response Rate by Sales Channel')
+    plt.xlabel('Sales Channel')
+    plt.ylabel('Response Rate (%)')
+    for p in ax.patches:
+        height = p.get_height()
         ax.annotate(f'{height:.1f}%', (p.get_x() + p.get_width()/2, height),
-                    ha='center', va='bottom', fontsize=12, color='black',
-                    xytext=(0, 3), textcoords='offset points')
-plt.xticks(rotation=30)
-sns.despine()
-plt.tight_layout()
-plt.show()
+                    ha='center', va='bottom', fontsize=12, color='black')
+    plt.xticks(rotation=30)
+    sns.despine()
+    st.pyplot(plt.gcf())
+    plt.clf()
 
+    # ---------------- Response Rate by Policy Type ----------------
+    response_by_policy = df_filtered.groupby('Policy_Type').apply(
+        lambda x: (x['Response'] == 'True').mean() * 100,
+        include_groups=False
+    ).reset_index(name='Response_Rate(%)').sort_values(by='Response_Rate(%)', ascending=False)
 
-# Response Rate by Coverage
-response_by_coverage = df_insurance.groupby('Coverage').apply(
-    lambda x: (x['Response'] == 'True').mean() * 100,
-    include_groups=False
-).reset_index(name='Response_Rate(%)').sort_values(by='Response_Rate(%)', ascending=False)
+    plt.figure(figsize=(6, 5))
+    ax = sns.barplot(data=response_by_policy, x='Policy_Type', y='Response_Rate(%)', color='lightgreen')
+    plt.title('Response Rate by Policy Type')
+    plt.xlabel('Policy Type')
+    plt.ylabel('Response Rate (%)')
+    for p in ax.patches:
+        height = p.get_height()
+        if height > 0:
+            ax.annotate(f'{height:.1f}%', (p.get_x() + p.get_width()/2, height),
+                        ha='center', va='bottom', fontsize=12, color='black')
+    plt.xticks(rotation=30)
+    sns.despine()
+    st.pyplot(plt.gcf())
+    plt.clf()
 
-plt.figure(figsize=(6,5))
-sns.set_style("white")
-ax = sns.barplot(data=response_by_coverage, x='Coverage', y='Response_Rate(%)', color='lightcoral')
-plt.title('Response Rate by Coverage')
-plt.xlabel('Coverage')
-plt.ylabel('Response Rate (%)')
-for p in ax.patches:
-    height = p.get_height()
-    if height > 0:
+    # ---------------- Response Rate by Coverage ----------------
+    response_by_coverage = df_filtered.groupby('Coverage').apply(
+        lambda x: (x['Response'] == 'True').mean() * 100,
+        include_groups=False
+    ).reset_index(name='Response_Rate(%)').sort_values(by='Response_Rate(%)', ascending=False)
+
+    plt.figure(figsize=(6, 5))
+    ax = sns.barplot(data=response_by_coverage, x='Coverage', y='Response_Rate(%)', color='lightcoral')
+    plt.title('Response Rate by Coverage')
+    plt.xlabel('Coverage')
+    plt.ylabel('Response Rate (%)')
+    for p in ax.patches:
+        height = p.get_height()
+        if height > 0:
+            ax.annotate(f'{height:.1f}%', (p.get_x() + p.get_width()/2, height),
+                        ha='center', va='bottom', fontsize=12, color='black')
+    plt.xticks(rotation=30)
+    sns.despine()
+    st.pyplot(plt.gcf())
+    plt.clf()
+
+    # ---------------- Response Rate by CLV Segment ----------------
+    df_filtered['CLV_Segment'] = pd.qcut(df_filtered['CLV_Corrected'], 3, labels=['Low', 'Medium', 'High'])
+    response_by_clv = df_filtered.groupby('CLV_Segment', observed=True).apply(
+        lambda x: (x['Response'] == 'True').mean() * 100,
+        include_groups=False
+    ).reset_index(name='Response_Rate(%)').sort_values(by='Response_Rate(%)', ascending=False)
+
+    plt.figure(figsize=(6, 5))
+    ax = sns.barplot(data=response_by_clv, x='CLV_Segment', y='Response_Rate(%)', color='lightskyblue')
+    plt.title('Response Rate by CLV Segment')
+    plt.xlabel('CLV Segment')
+    plt.ylabel('Response Rate (%)')
+    for p in ax.patches:
+        height = p.get_height()
+        if height > 0:
+            ax.annotate(f'{height:.1f}%', (p.get_x() + p.get_width()/2, height),
+                        ha='center', va='bottom', fontsize=12, color='black')
+    plt.xticks(rotation=0)
+    sns.despine()
+    st.pyplot(plt.gcf())
+    plt.clf()
+
+    # ---------------- Offer Type Performance ----------------
+    offers = ['Offer1', 'Offer2', 'Offer3', 'Offer4']
+    response_by_offer = df_filtered.groupby('Renew_Offer_Type').apply(
+        lambda x: (x['Response'] == 'True').mean() * 100,
+        include_groups=False
+    ).reset_index(name='Response_Rate(%)')
+    response_by_offer = response_by_offer.set_index('Renew_Offer_Type').reindex(offers, fill_value=0).reset_index()
+
+    plt.figure(figsize=(8, 6))
+    ax = sns.barplot(data=response_by_offer, x='Renew_Offer_Type', y='Response_Rate(%)', color='lightpink')
+    plt.title('Response Rate by Offer Type')
+    plt.xlabel('Renew Offer Type')
+    plt.ylabel('Response Rate (%)')
+    for p in ax.patches:
+        height = p.get_height()
+        ax.annotate(f'{height:.1f}%', (p.get_x() + p.get_width() / 2, height),
+                    ha='center', va='bottom', fontsize=12, color='black')
+    plt.xticks(rotation=30)
+    sns.despine()
+    st.pyplot(plt.gcf())
+    plt.clf()
+
+    # ---------------- Income Bracket Response Rate ----------------
+    df_filtered['Income_Bracket'] = pd.cut(
+        df_filtered['Income'],
+        bins=[-1, 25000, 50000, 75000, 100000, float('inf')],
+        labels=['<25K','25-50K','50-75K','75-100K','100K+']
+    )
+    income_response = df_filtered.groupby('Income_Bracket', observed=True).apply(
+        lambda x: (x['Response'] == 'True').mean() * 100, include_groups=False
+    ).reset_index(name='Response_Rate(%)').sort_values(by='Response_Rate(%)', ascending=False)
+
+    plt.figure(figsize=(10, 6))
+    ax = sns.barplot(data=income_response, x='Income_Bracket', y='Response_Rate(%)', color='lightblue')
+    plt.title('Response Rate by Income Bracket')
+    plt.xlabel('Income Bracket')
+    plt.ylabel('Response Rate (%)')
+    for p in ax.patches:
+        height = p.get_height()
         ax.annotate(f'{height:.1f}%', (p.get_x() + p.get_width()/2, height),
-                    ha='center', va='bottom', fontsize=12, color='black',
-                    xytext=(0, 3), textcoords='offset points')
-plt.xticks(rotation=30)
-sns.despine()
-plt.tight_layout()
-plt.show()
+                    ha='center', va='bottom', fontsize=12, color='black')
+    sns.despine()
+    st.pyplot(plt.gcf())
+    plt.clf()
 
+    # ---------------- Top Converting Segment (Policy Type x Coverage) ----------------
+    top_segment = df_filtered.groupby(['Policy_Type', 'Coverage'], observed=True).apply(
+        lambda x: (x['Response'] == 'True').mean() * 100, include_groups=False
+    ).reset_index(name='Response_Rate(%)').sort_values(by='Response_Rate(%)', ascending=False)
 
-# Response Rate by CLV Segment
-df_insurance['CLV_Segment'] = pd.qcut(df_insurance['CLV_Corrected'], 3, labels=['Low', 'Medium', 'High'])
-response_by_clv = df_insurance.groupby('CLV_Segment', observed=True).apply(
-    lambda x: (x['Response'] == 'True').mean() * 100,
-    include_groups=False
-).reset_index(name='Response_Rate(%)').sort_values(by='Response_Rate(%)', ascending=False)
+    plt.figure(figsize=(8, 7))
+    top_segment_sorted = top_segment.sort_values(by='Response_Rate(%)', ascending=False)
+    ax = sns.barplot(data=top_segment_sorted, x='Coverage', y='Response_Rate(%)',
+                     hue='Policy_Type', palette='pastel')
+    plt.title('Top Converting Segments: Response Rate by Policy Type and Coverage')
+    plt.xlabel('Coverage Level')
+    plt.ylabel('Response Rate (%)')
+    for p in ax.patches:
+        height = p.get_height()
+        if height > 0.05:
+            ax.annotate(f'{height:.1f}%', (p.get_x() + p.get_width()/2, height),
+                        ha='center', va='bottom', fontsize=11, color='black')
+    plt.legend(title='Policy Type')
+    plt.xticks(rotation=30)
+    sns.despine()
+    st.pyplot(plt.gcf())
+    plt.clf()
 
-plt.figure(figsize=(6,5))
-sns.set_style("white")
-ax = sns.barplot(data=response_by_clv, x='CLV_Segment', y='Response_Rate(%)', color='lightskyblue')
-plt.title('Response Rate by CLV Segment')
-plt.xlabel('CLV Segment')
-plt.ylabel('Response Rate (%)')
-for p in ax.patches:
-    height = p.get_height()
-    if height > 0:
+    # ---------------- Retention vs. New Acquisition Response ----------------
+    df_filtered['Is_New'] = df_filtered['Months_Since_Policy_Inception'] < 12
+    retention_response = df_filtered.groupby('Is_New', observed=True).apply(
+        lambda x: (x['Response'] == 'True').mean() * 100, include_groups=False
+    ).reset_index(name='Response_Rate(%)').sort_values(by='Response_Rate(%)', ascending=False)
+    retention_response['Customer_Type'] = retention_response['Is_New'].map({True:'New', False:'Retention'})
+
+    plt.figure(figsize=(5, 6))
+    ax = sns.barplot(data=retention_response, x='Customer_Type', y='Response_Rate(%)', color='lightcoral')
+    plt.title('Response Rate: Retention vs. New Acquisition')
+    plt.xlabel('Customer Type')
+    plt.ylabel('Response Rate (%)')
+    for p in ax.patches:
+        height = p.get_height()
         ax.annotate(f'{height:.1f}%', (p.get_x() + p.get_width()/2, height),
-                    ha='center', va='bottom', fontsize=12, color='black',
-                    xytext=(0, 3), textcoords='offset points')
-plt.xticks(rotation=0)
-sns.despine()
-plt.tight_layout()
-plt.show()
-
-
-# Offer Type Performance
-offers = ['Offer1', 'Offer2', 'Offer3', 'Offer4']
-response_by_offer = df_insurance.groupby('Renew_Offer_Type').apply(
-    lambda x: (x['Response'] == 'True').mean() * 100,
-    include_groups=False
-).reset_index(name='Response_Rate(%)')
-response_by_offer = response_by_offer.set_index('Renew_Offer_Type').reindex(offers, fill_value=0).reset_index()
-
-plt.figure(figsize=(8,6))
-sns.set_style("white")
-ax = sns.barplot(data=response_by_offer, x='Renew_Offer_Type', y='Response_Rate(%)', color='lightpink')
-plt.title('Response Rate by Offer Type')
-plt.xlabel('Renew Offer Type')
-plt.ylabel('Response Rate (%)')
-for p in ax.patches:
-    height = p.get_height()
-    ax.annotate(f'{height:.1f}%', (p.get_x() + p.get_width() / 2, height),
-                ha='center', va='bottom', fontsize=12, color='black',
-                xytext=(0, 3), textcoords='offset points')
-plt.xticks(rotation=30)
-sns.despine()
-plt.tight_layout()
-plt.show()
-
-
-# Income Bracket Response Rate
-df_insurance['Income_Bracket'] = pd.cut(df_insurance['Income'], bins=[-1, 25000, 50000, 75000, 100000, float('inf')],
-                                        labels=['<25K','25-50K','50-75K','75-100K','100K+'])
-income_response = df_insurance.groupby('Income_Bracket', observed=True).apply(
-    lambda x: (x['Response'] == 'True').mean() * 100, include_groups=False
-).reset_index(name='Response_Rate(%)').sort_values(by='Response_Rate(%)', ascending=False)
-plt.figure(figsize=(10,6))
-sns.set_style("white")
-ax = sns.barplot(data=income_response, x='Income_Bracket', y='Response_Rate(%)', color='lightblue')
-plt.title('Response Rate by Income Bracket')
-plt.xlabel('Income Bracket')
-plt.ylabel('Response Rate (%)')
-for p in ax.patches:
-    height = p.get_height()
-    ax.annotate(f'{height:.1f}%', (p.get_x() + p.get_width()/2, height), ha='center', va='bottom', fontsize=12, color='black', xytext=(0, 3), textcoords='offset points')
-plt.tight_layout()
-plt.show()
-
-
-# Top Converting Segment (Policy Type x Coverage)
-top_segment = df_insurance.groupby(['Policy_Type', 'Coverage'], observed=True).apply(
-    lambda x: (x['Response'] == 'True').mean() * 100, include_groups=False
-).reset_index(name='Response_Rate(%)').sort_values(by='Response_Rate(%)', ascending=False)
-
-plt.figure(figsize=(8,7))
-sns.set_style("whitegrid")
-
-# Sort DataFrame descending by Response Rate for clear legend ordering
-top_segment_sorted = top_segment.sort_values(by='Response_Rate(%)', ascending=False)
-
-# Plot grouped barplot by Coverage with hue=Policy_Type
-ax = sns.barplot(data=top_segment_sorted, x='Coverage', y='Response_Rate(%)', hue='Policy_Type', palette='pastel')
-
-plt.title('Top Converting Segments: Response Rate by Policy Type and Coverage')
-plt.xlabel('Coverage Level')
-plt.ylabel('Response Rate (%)')
-
-for p in ax.patches:
-    height = p.get_height()
-    if height > 0.05:  # Only annotate bars with height greater than 0.05%
-        ax.annotate(f'{height:.1f}%', (p.get_x() + p.get_width()/2, height),
-                    ha='center', va='bottom', fontsize=11, color='black',
-                    xytext=(0,3), textcoords='offset points')
-
-plt.legend(title='Policy Type')
-plt.xticks(rotation=30)
-plt.tight_layout()
-plt.show()
-
-
-# Retention vs. New Acquisition Response
-df_insurance['Is_New'] = df_insurance['Months_Since_Policy_Inception'] < 12
-retention_response = df_insurance.groupby('Is_New', observed=True).apply(
-    lambda x: (x['Response'] == 'True').mean() * 100, include_groups=False
-).reset_index(name='Response_Rate(%)').sort_values(by='Response_Rate(%)', ascending=False)
-retention_response['Customer_Type'] = retention_response['Is_New'].map({True:'New', False:'Retention'})
-plt.figure(figsize=(5,6))
-sns.set_style("white")
-ax = sns.barplot(data=retention_response, x='Customer_Type', y='Response_Rate(%)', color='lightcoral')
-plt.title('Response Rate: Retention vs. New Acquisition')
-plt.xlabel('Customer Type')
-plt.ylabel('Response Rate (%)')
-for p in ax.patches:
-    height = p.get_height()
-    ax.annotate(f'{height:.1f}%', (p.get_x() + p.get_width()/2, height), ha='center', va='bottom', fontsize=12, color='black', xytext=(0, 3), textcoords='offset points')
-plt.tight_layout()
-plt.show()
+                    ha='center', va='bottom', fontsize=12, color='black')
+    sns.despine()
+    st.pyplot(plt.gcf())
+    plt.clf()
 
 
 
