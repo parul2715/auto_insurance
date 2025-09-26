@@ -1016,13 +1016,19 @@ if "logged_in" not in st.session_state:
     st.session_state.logged_in = False
 if "page" not in st.session_state:
     st.session_state.page = "login"
+
 if st.session_state.logged_in:
-    
-    if st.session_state.page == "business":
-        business_context()
-    elif st.session_state.page == "dashboard":
-        dashboard()
+    df_insurance = load_data()
+
+    if df_insurance.empty:
+        st.error("❌ Failed to load data. Please check your database connection.")
     else:
-        dashboard()
+        # ✅ Page routing
+        if st.session_state.page == "business":
+            business_context()
+        elif st.session_state.page == "dashboard":
+            dashboard()
+        else:
+            dashboard()
 else:
     login_page()
