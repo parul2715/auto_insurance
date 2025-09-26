@@ -901,6 +901,7 @@ def marketing_campaigns(df_filtered):
 
 def dashboard():
     set_dark_theme()
+
     st.sidebar.title("Navigation")
     pages = [
         "Overall Business Snapshot",
@@ -925,7 +926,7 @@ def dashboard():
     educations = sorted(df_insurance['Education'].dropna().unique())
     policy_types = sorted(df_insurance['Policy_Type'].dropna().unique())
 
-    # Inside the sidebar, show filters depending on page and store selections in session state
+    # Inside the sidebar, show filters based on selected page
     with st.sidebar:
         if st.session_state.selected_page == "Customer Demographics Analysis":
             st.session_state.month_filter = st.multiselect("Month", months, default=st.session_state.get("month_filter", months))
@@ -954,13 +955,15 @@ def dashboard():
             st.session_state.policy_type_filter = st.multiselect("Policy Type", policy_types, default=st.session_state.get("policy_type_filter", policy_types))
             st.session_state.sales_channel_filter = st.multiselect("Sales Channel", sales_channels, default=st.session_state.get("sales_channel_filter", sales_channels))
 
+        # ✅ Logout button
+        st.markdown("---")
         if st.session_state.get("logged_in", False):
-            st.markdown("---")
             if st.button("🚪 Logout"):
                 st.session_state.logged_in = False
+                st.session_state.page = "login"  # Ensure it navigates to login
                 st.experimental_rerun()
 
-    # Render page content outside sidebar using session state filters
+    # 🚀 Render selected page using filtered data
     selected_page = st.session_state.selected_page
 
     if selected_page == "Overall Business Snapshot":
@@ -1007,6 +1010,7 @@ def dashboard():
             df_insurance['Sales_Channel'].isin(st.session_state.get("sales_channel_filter", sales_channels))
         ]
         marketing_campaigns(df_filtered)
+
 
 
 
